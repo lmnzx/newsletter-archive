@@ -11,13 +11,15 @@ async fn main() -> std::io::Result<()> {
     let subscriber = get_subscriber("zero2prod".into(), "info".into());
     init_subscriber(subscriber);
 
-    let configuration = get_configuration().expect("Failed to read configuration");
+    let configuration = get_configuration().expect("Failed to read config");
     let connection_pool =
-        PgPool::connect(&configuration.database.connection_string().expose_secret())
-            .await
-            .expect("Failed to connect to Postgres");
+        PgPool::connect_lazy(&configuration.database.connection_string().expose_secret())
+            .expect("Failed to create Postgres connection pool");
 
-    let address = format!("127.0.0.1:{}", configuration.application_port);
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port
+    );
     let listener = TcpListener::bind(address)?;
     run(listener, connection_pool)?.await?;
     Ok(())
