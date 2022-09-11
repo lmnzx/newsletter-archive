@@ -1,15 +1,4 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use std::net::TcpListener;
-
-#[allow(dead_code)]
-pub async fn health_check() -> impl Responder {
-    HttpResponse::Ok().finish()
-}
-
-#[allow(dead_code)]
-pub async fn run(listener: TcpListener) -> std::io::Result<()> {
-    HttpServer::new(|| App::new().route("/health_check", web::get().to(health_check)))
-        .listen(listener)?
-        .run()
-        .await
-}
+pub mod configuration;
+pub mod routes;
+pub mod startup;
+pub mod telemetry;
