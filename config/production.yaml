@@ -1,3 +1,5 @@
 #! config/production.yaml
 application:
   host: 0.0.0.0
+database:
+  require_ssl: true
