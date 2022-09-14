@@ -17,5 +17,6 @@ RUN apt-get update -y \
 COPY --from=builder /app/target/release/zero2prod zero2prod
 COPY config config
 ENV APP_ENVIRONMENT production
+ENV RUST_LOG trace
 ENTRYPOINT ["./zero2prod"]
 
