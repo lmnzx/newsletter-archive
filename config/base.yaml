@@ -11,3 +11,4 @@ email_client:
   base_url: "https://api.sendgrid.com"
   sender_email: "devlemon@mail.com"
   authorization_token: "lol"
+  timeout_milliseconds: 10000

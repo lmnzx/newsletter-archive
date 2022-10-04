@@ -1,5 +1,5 @@
 use reqwest::Client;
-use secrecy::Secret;
+use secrecy::{ExposeSecret, Secret};
 use serde_json::json;
 
 use crate::domain::SubscriberEmail;
@@ -25,9 +25,11 @@ impl EmailClient {
         base_url: String,
         sender: SubscriberEmail,
         authorization_token: Secret<String>,
+        timeout: std::time::Duration,
     ) -> Self {
+        let http_client = Client::builder().timeout(timeout).build().unwrap();
         Self {
-            http_client: Client::new(),
+            http_client,
             base_url,
             sender,
             authorization_token,
@@ -40,7 +42,7 @@ impl EmailClient {
         subject: &str,
         html_content: &str,
         text_content: &str,
-    ) -> Result<(), String> {
+    ) -> Result<(), reqwest::Error> {
         let url = format!("{}/v3/mail/send", self.base_url);
         let request_body = SendEmailRequest {
             from: self.sender.as_ref().to_owned(),
@@ -61,16 +63,14 @@ impl EmailClient {
                  "content": [{"type": "text/plain", "value": format!("{}", request_body.text_body)}]
         });
 
-        let builder = self.http_client.post(&url).json(&request_body_json);
+        self.http_client
+            .post(&url)
+            .header("Authorization", self.authorization_token.expose_secret())
+            .json(&request_body_json)
+            .send()
+            .await?
+            .error_for_status()?;
 
         Ok(())
     }
 }
-
-/*
-curl --request POST \
-          --url https://api.sendgrid.com/v3/mail/send \
-          --header "Authorization: Bearer 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" \
-          --header 'Content-Type: application/json' \
-          --data '{"personalizations": [{"to": [{"email": "snyxmk@gmail.com"}]}],"from": {"email": "devlemon@mail.com"},"subject": "Sending with SendGrid is Fun","content": [{"type": "text/plain", "value": "and easy to do anywhere, even with cURL"}]}'
-*/
