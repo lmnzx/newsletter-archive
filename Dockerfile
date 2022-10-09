@@ -14,9 +14,9 @@ RUN apt-get update -y \
         && apt-get autoremove -y \
         && apt-get clean -y \
         && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/zero2prod zero2prod
+COPY --from=builder /app/target/release/newsletter newsletter
 COPY config config
 ENV APP_ENVIRONMENT production
 ENV RUST_LOG trace
-ENTRYPOINT ["./zero2prod"]
+ENTRYPOINT ["./newsletter"]
 

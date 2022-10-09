@@ -1,5 +1,5 @@
-use actix_web::{HttpResponse, Responder};
+use axum::{http::StatusCode, response::IntoResponse};
 
-pub async fn health_check() -> impl Responder {
-    HttpResponse::Ok().finish()
+pub async fn health_check() -> impl IntoResponse {
+    (StatusCode::OK, "OK")
 }
