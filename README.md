@@ -1,1 +1,1 @@
-# zero2prod
+## A simple newletter app written in rust 🦀
