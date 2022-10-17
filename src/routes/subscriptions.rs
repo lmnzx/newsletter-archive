@@ -1,4 +1,5 @@
 use {
+    crate::email_client::send_mail,
     axum::{
         extract::{Form, State},
         http::StatusCode,
@@ -30,6 +31,8 @@ pub async fn subscriptions(
         Utc::now()
     )
     .execute(&db_pool)
-    .await;
+    .await
+    .expect("Database error");
+    send_mail(form_data.email, form_data.name);
     (StatusCode::OK, "subscriptions endpoint")
 }

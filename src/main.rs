@@ -14,8 +14,11 @@ use {
     tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt},
 };
 
+use newsletter::graceful_shutdown::shutdown_signal;
 use newsletter::metrics::{setup_metrics_recorder, track_metrics};
 use newsletter::routes::{global_404, health_check, subscriptions};
+
+//TODO Config
 
 #[tokio::main]
 async fn main() {
@@ -62,6 +65,7 @@ async fn main() {
     tracing::debug!("listing on address {addr}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 }

@@ -25,6 +25,7 @@ tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 config = "0.13.2"
 uuid = { version = "1.2.1", features = ["v4"] }
 chrono = "0.4.22"
+lettre = { version = "0.10.1", features = ["smtp-transport", "builder"] }
 
 [dependencies.sqlx]
 version = "0.6.2"
