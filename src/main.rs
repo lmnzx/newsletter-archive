@@ -18,6 +18,8 @@ use newsletter::graceful_shutdown::shutdown_signal;
 use newsletter::metrics::{setup_metrics_recorder, track_metrics};
 use newsletter::routes::{global_404, health_check, subscriptions};
 
+//TODO Config
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
