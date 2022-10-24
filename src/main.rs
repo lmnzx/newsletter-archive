@@ -7,6 +7,7 @@ use {
         routing::{get, post},
         Router,
     },
+    secrecy::ExposeSecret,
     sqlx::postgres::PgPoolOptions,
     std::{future::ready, net::SocketAddr, time::Duration},
     tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer},
@@ -14,27 +15,28 @@ use {
     tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt},
 };
 
+use newsletter::configuration::get_configuration;
 use newsletter::graceful_shutdown::shutdown_signal;
 use newsletter::metrics::{setup_metrics_recorder, track_metrics};
 use newsletter::routes::{global_404, health_check, subscriptions};
-
-//TODO Config
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "pscale=debug,tower_http=debug".into()),
+            std::env::var("RUST_LOG")
+                .unwrap_or_else(|_| "newsletter=debug,tower_http=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
     let recorder_handle = setup_metrics_recorder();
 
+    let configuration = get_configuration().expect("Failed to read config");
+
     let db_pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect_lazy("postgres://postgres:password@127.0.0.1:5432/newsletter")
-        .expect("can connect to database");
+        .acquire_timeout(std::time::Duration::from_secs(2))
+        .connect_lazy_with(configuration.database.connection_string());
 
     let app = Router::with_state(db_pool)
         .route("/health_check", get(health_check))
@@ -61,9 +63,21 @@ async fn main() {
                 ),
         );
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    tracing::debug!("listing on address {addr}");
-    axum::Server::bind(&addr)
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port
+    );
+
+    println!(
+        "SMTP EMAIL KEY -> {:?}",
+        configuration.email.key.expose_secret()
+    );
+
+    let address: SocketAddr = address.parse().expect("Unable to parse socket address");
+
+    tracing::debug!("listing on address {address}");
+
+    axum::Server::bind(&address)
         .serve(app.into_make_service())
         .with_graceful_shutdown(shutdown_signal())
         .await

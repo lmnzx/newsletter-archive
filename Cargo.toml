@@ -26,6 +26,8 @@ config = "0.13.2"
 uuid = { version = "1.2.1", features = ["v4"] }
 chrono = "0.4.22"
 lettre = { version = "0.10.1", features = ["smtp-transport", "builder"] }
+serde-aux = "4.0.0"
+secrecy = { version = "0.8.0", features = ["serde"] }
 
 [dependencies.sqlx]
 version = "0.6.2"
