@@ -1,5 +1,5 @@
 use actix_web::{web, HttpResponse};
-use chrono::Local;
+use chrono::Utc;
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -18,7 +18,7 @@ pub async fn subscribe(form: web::Form<FormData>, connection: web::Data<PgPool>)
         Uuid::new_v4(),
         form.email,
         form.name,
-        Local::now().naive_local()
+        Utc::now().naive_utc()
     )
     .execute(connection.get_ref())
     .await
