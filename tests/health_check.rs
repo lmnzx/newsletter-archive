@@ -1,12 +1,13 @@
-use newsletter::{
-    configuration::{get_configuration, DatabaseSettings},
-    telemetry::{get_subscriber, init_subscriber},
-};
 use once_cell::sync::Lazy;
-// use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
+
+use newsletter::{
+    configuration::{get_configuration, DatabaseSettings},
+    email_client::EmailClient,
+    telemetry::{get_subscriber, init_subscriber},
+};
 
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
@@ -62,7 +63,19 @@ async fn spawn_app() -> TestApp {
 
     let connection_pool = configure_database(&config.database).await;
 
-    let server = newsletter::startup::run(listener, connection_pool.clone())
+    let sender_email = config
+        .email_client
+        .sender()
+        .expect("Invaild sender email address");
+
+    let email_client = EmailClient::new(
+        config.email_client.base_url,
+        sender_email,
+        config.email_client.auth_token,
+        config.email_client.timeout(),
+    );
+
+    let server = newsletter::startup::run(listener, connection_pool.clone(), email_client)
         .expect("Failed to bind address");
 
     let _ = tokio::spawn(server);
