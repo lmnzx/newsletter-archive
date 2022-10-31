@@ -34,7 +34,7 @@ impl EmailClient {
         recipient: SubscriberEmail,
         subject: &str,
         html_content: &str,
-        text_content: &str,
+        _text_content: &str,
     ) -> Result<(), reqwest::Error> {
         let url = format!("{}/v3/mail/send", self.base_url);
 
