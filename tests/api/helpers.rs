@@ -8,6 +8,8 @@ use newsletter::{
     telemetry::{get_subscriber, init_subscriber},
 };
 
+// TODO implement Email test
+
 static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
     let subscriber_name = "test".to_string();
